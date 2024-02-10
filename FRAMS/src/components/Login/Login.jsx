@@ -1,3 +1,4 @@
+// Importing necessary items
 import {
   Box,
   Button,
@@ -11,12 +12,17 @@ import {
 import { Form, Formik } from "formik";
 import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
+import { useDispatch } from "react-redux";
+import { login } from "../../app/authSlice";
 
+// Initialize the value for form
 const initialValues = {
   id: "",
   password: "",
   designation: "",
 };
+
+// Validation schema for form
 const validationSchema = Yup.object({
   id: Yup.number()
     .typeError("ID must be a number")
@@ -30,9 +36,14 @@ const validationSchema = Yup.object({
   designation: Yup.string().required("Designation is required"),
 });
 
+// Main function
 function Login() {
   const navigate = useNavigate();
 
+  // Creating the dispatcher for login state
+  const dispatch = useDispatch();
+
+  // OnSubmit Function
   const onSubmit = async (values, formik) => {
     // console.log(values);
     try {
@@ -52,10 +63,11 @@ function Login() {
           }
         );
         const json = await response.json();
-        // console.log(json);
+        // console.log("Login Response", json);
         if (json.success) {
           localStorage.setItem("authToken", json.authToken);
           formik.resetForm();
+          dispatch(login());
           navigate("/adminpanel");
         } else {
           console.error(json.error);
@@ -64,8 +76,6 @@ function Login() {
     } catch (error) {
       console.error("An error occurred:", error);
     }
-
-    // onSubmitProps.resetForm();
   };
 
   return (
@@ -75,7 +85,7 @@ function Login() {
           <Stack spacing={3}>
             <Typography
               component="div"
-              variant="h3"
+              variant="h2"
               color="primary.dark"
               align="center"
             >
@@ -106,6 +116,7 @@ function Login() {
                         label="Password"
                         id="password"
                         name="password"
+                        size="medium"
                         value={formik.values.password}
                         onBlur={formik.handleBlur}
                         onChange={formik.handleChange}
@@ -127,7 +138,7 @@ function Login() {
                             id="designation"
                             fullWidth
                             variant="outlined"
-                            size="small"
+                            size="medium"
                             value={formik.values.designation}
                             onBlur={formik.handleBlur}
                             onChange={formik.handleChange}
@@ -148,8 +159,13 @@ function Login() {
                         <Button
                           variant="contained"
                           type="submit"
+                          size="large"
                           disabled={!formik.isValid || formik.isSubmitting}
-                          style={{ height: "40px", width: "120px" }}
+                          style={{
+                            height: "50px",
+                            width: "120px",
+                            fontSize: "1.3rem",
+                          }}
                         >
                           Submit
                         </Button>

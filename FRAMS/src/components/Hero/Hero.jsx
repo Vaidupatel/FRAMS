@@ -12,10 +12,10 @@ function Hero(props) {
   const extraPath = `/${props.extraPath}`;
   const nextPath = `/${props.nextPath}`;
   return (
-    <Box width="50vw" component="div" margin="auto" padding="50px">
-      <Card elevation={20} sx={{ p: 2 }}>
+    <Box width="60vw" component="div" margin="auto" padding="50px">
+      <Card elevation={20} sx={{ p: 3 }}>
         <CardContent>
-          <Typography variant="h3" align="center" component="div">
+          <Typography variant="h2" align="center" component="div">
             {props.heading}
           </Typography>
           <Typography
@@ -26,15 +26,15 @@ function Hero(props) {
           >
             {props.subtitle}
           </Typography>
-          <Typography variant="body1" component="div">
+          <Typography variant="body1" fontSize={"1.2rem"} component="div">
             {props.content}
           </Typography>
         </CardContent>
         <CardActions>
-          <Button component={Link} to={extraPath}>
+          <Button component={Link} to={extraPath} sx={{fontSize:"1.3rem"}}>
             {props.extraTxt}
           </Button>
-          <Button component={Link} to={nextPath}>
+          <Button component={Link} to={nextPath} sx={{fontSize:"1.3rem"}}>
             {props.nextTxt}
           </Button>
         </CardActions>

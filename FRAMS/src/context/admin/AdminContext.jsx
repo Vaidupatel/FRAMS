@@ -1,5 +1,3 @@
 import { createContext } from "react";
 
-const adminContext = createContext();
-
-export default adminContext;
+export const adminContext = createContext(); // Named export for adminContext

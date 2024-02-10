@@ -1,11 +1,14 @@
-const mongoose=require( "mongoose");
+const mongoose = require("mongoose");
 
 const { Schema } = mongoose;
 const rootAdminSchema = new Schema({
   name: {
     type: String,
   },
-
+  designation: {
+    type: String,
+    required: true,
+  },
   rootAdminId: {
     type: Number,
     length: 15,
@@ -14,6 +17,11 @@ const rootAdminSchema = new Schema({
     type: String,
     required: true,
     lowercase: true,
+  },
+  mobile: {
+    type: Number,
+    length: 10,
+    required: true,
   },
   password: {
     type: String,

@@ -1,20 +1,22 @@
 const { Router } = require("express");
 const router = Router();
 const Admin = require("../models/Admin.js");
-const RootAdmin =require( "../models/RootAdmin.js");
+const RootAdmin = require("../models/RootAdmin.js");
 const { body, validationResult } = require("express-validator");
 const { genSalt, hash, compare } = require("bcrypt");
-const { sign } =require( "jsonwebtoken");
+const { sign } = require("jsonwebtoken");
 const jWT_SECRET = "OmfoooTuDekhengaMeraToken";
 // router.use(express.json());
 
-// ROUTE 1: create the root admin using : POST "/api/auth/login". no login required
+// ROUTE 1: create the root admin using : POST "/api/auth/createRootAdmin". no login required
 router.post(
   "/createRootAdmin",
   [
     body("name", "Enter valid name").isLength({ min: 3 }),
     body("rootAdminId", "Enter valid id").isLength({ min: 15, max: 15 }),
     body("email", "Enter valid email").isEmail(),
+    body("designation", "Enter valid designation").notEmpty(),
+    body("mobile", "Enter valid mobile number").isMobilePhone(),
     body("password", "Enter valid password").isLength({ min: 5 }),
   ],
   async (req, res) => {
@@ -43,9 +45,12 @@ router.post(
       rootAdmin = await RootAdmin({
         name: req.body.name,
         rootAdminId: req.body.rootAdminId,
+        designation: req.body.designation,
         email: req.body.email,
+        mobile: req.body.mobile,
         password: secPassword,
       });
+      await rootAdmin.save();
       const data = {
         rootAdmin: {
           id: rootAdmin.id,
@@ -69,6 +74,7 @@ router.post(
     body("name", "Enter valid name").isLength({ min: 3 }),
     body("adminID", "Enter valid id").isLength({ min: 15, max: 15 }),
     body("email", "Enter valid email").isEmail(),
+    body("mobile", "Enter valid mobile number").isMobilePhone(),
     body("password", "Enter valid password").isLength({ min: 5 }),
   ],
   async (req, res) => {
@@ -96,6 +102,7 @@ router.post(
         name: req.body.name,
         adminID: req.body.adminID,
         email: req.body.email,
+        mobile: req.body.mobile,
         password: secPassword,
       });
       const data = {
@@ -103,6 +110,7 @@ router.post(
           id: admin.id,
         },
       };
+      await admin.save();
       const authTocken = sign(data, jWT_SECRET);
       console.log(authTocken);
       success = true;
@@ -133,7 +141,8 @@ router.post(
       if (!rootAdmin) {
         return res.status(400).json({
           success,
-          error: "No record found! Please try to login with correct credentials!",
+          error:
+            "No record found! Please try to login with correct credentials!",
         });
       }
       const passwordCompare = await compare(password, rootAdmin.password);

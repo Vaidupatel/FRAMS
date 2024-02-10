@@ -3,15 +3,22 @@ const { Schema } = mongoose;
 const AdminSchema = new Schema({
   name: {
     type: String,
+    required: true,
   },
   adminID: {
     type: Number,
     length: 15,
+    required: true,
   },
   email: {
     type: String,
     required: true,
     lowercase: true,
+  },
+  mobile: {
+    type: Number,
+    length: 10,
+    required: true,
   },
   password: {
     type: String,
