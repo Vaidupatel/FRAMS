@@ -1,6 +1,6 @@
 // Import mongoose
 const { connect, connection } = require("mongoose");
-const mongoPass = "biGox4cOnP10LQ83";
+const mongoPass = "4iV9cexpfHXV9UUu";
 const mongoURI = `mongodb+srv://vaidkumar31:${mongoPass}@cluster0.dblhkka.mongodb.net/?retryWrites=true&w=majority`;
 
 const connectToDb= async() =>{

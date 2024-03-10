@@ -16,6 +16,7 @@ function AdminActivities() {
   const handleSubmitNewUserModal = (formData) => {
     // Handle form submission logic here
     console.log("Form data from AdminPanel:", formData);
+    
     setIsNewUserModalOpen(false);
   };
 

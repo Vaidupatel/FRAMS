@@ -24,6 +24,11 @@ const AdminSchema = new Schema({
     type: String,
     required: true,
   },
+  isImageSubmited: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
   createdAt: {
     type: Date,
     immutable: true,

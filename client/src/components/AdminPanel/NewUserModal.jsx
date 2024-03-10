@@ -17,6 +17,7 @@ const initialValues = {
   email: "",
   password: "",
   cpasswprd: "",
+  images: [],
 };
 
 // Validation schema for form
@@ -48,6 +49,9 @@ const validationSchema = Yup.object({
 });
 
 function NewUserModal({ isOpen, onClose, onSubmit }) {
+  const handleFileChange = (event, formik) => {
+    formik.setFieldValue("images", event.currentTarget.files);
+  };
   return (
     <Modal open={isOpen} onClose={onClose}>
       <Box
@@ -63,9 +67,6 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
           p: 4,
         }}
       >
-        <Typography variant="h5" gutterBottom>
-          Fill out the form
-        </Typography>
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
@@ -76,6 +77,9 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
             return (
               <Form>
                 <Stack m={2} spacing={2}>
+                  <Typography variant="h5" gutterBottom>
+                    Fill out the form
+                  </Typography>
                   <TextField
                     label="Name"
                     id="name"
@@ -140,16 +144,27 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
                       formik.touched.cpasswprd && formik.errors.cpasswprd
                     }
                   />
+                  <Typography variant="body1">Upload your 10 photos</Typography>
+                  <input
+                    type="file"
+                    accept="images/*"
+                    multiple
+                    // onChange={handleImageChange}
+                    onChange={(event) => handleFileChange(event, formik)}
+                  />
+
+                  <Box>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      size="large"
+                      disabled={!formik.isValid || formik.isSubmitting}
+                    >
+                      Submit
+                    </Button>
+                    <Button onClick={onClose}>Cancel</Button>
+                  </Box>
                 </Stack>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  disabled={!formik.isValid || formik.isSubmitting}
-                >
-                  Submit
-                </Button>
-                <Button onClick={onClose}>Cancel</Button>
               </Form>
             );
           }}
@@ -159,7 +174,7 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
   );
 }
 
-NewUserModal.propTypes  = {
+NewUserModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
