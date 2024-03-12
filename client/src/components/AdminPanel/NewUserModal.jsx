@@ -48,6 +48,7 @@ const validationSchema = Yup.object({
     .required("Confirm Password is required"),
 });
 
+
 function NewUserModal({ isOpen, onClose, onSubmit }) {
   const handleFileChange = (event, formik) => {
     formik.setFieldValue("images", event.currentTarget.files);
