@@ -20,6 +20,7 @@ const initialValues = {
   password: "",
   cpasswprd: "",
   designation: "",
+  mobile: "",
   images: [],
 };
 
@@ -37,6 +38,9 @@ const validationSchema = Yup.object({
       message: "ID must be exactly 15 digits",
       test: (val) => val && val.toString().length === 15,
     }),
+  mobile: Yup.string()
+    .required("Mobile Number is required")
+    .matches(/^[0-9]{10}$/, "Mobile Number must be 10 digits"),
   email: Yup.string()
     .email("Invalid email address")
     .required("Email is required"),
@@ -64,9 +68,20 @@ const validationSchema = Yup.object({
     }),
 });
 
-function NewUserModal({ isOpen, onClose, onSubmit }) {
+function NewUserModal({ isOpen, onClose, onSubmit, setImageBase64Array }) {
   const handleFileChange = (event, formik) => {
     const filesArray = Array.from(event.currentTarget.files);
+    const base64Array = [];
+
+    filesArray.forEach((file) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(",")[1];
+        base64Array.push(base64String);
+        setImageBase64Array(base64Array);
+      };
+    });
     formik.setFieldValue("images", filesArray);
   };
   return (
@@ -90,7 +105,7 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
           onSubmit={onSubmit}
           validateOnBlur={true}
         >
-          {(formik) => {
+          {(formik, setImageBase64Array) => {
             return (
               <Form>
                 <Stack m={2} spacing={2}>
@@ -132,6 +147,42 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
                     helperText={formik.touched.email && formik.errors.email}
                   />
                   <TextField
+                    label="Mobile Number"
+                    id="mobile"
+                    name="mobile"
+                    size="small"
+                    value={formik.values.mobile}
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    error={
+                      formik.touched.mobile && Boolean(formik.errors.mobile)
+                    }
+                    helperText={formik.touched.mobile && formik.errors.mobile}
+                  />
+                  <TextField
+                    select
+                    label="Designation"
+                    name="designation"
+                    id="designation"
+                    size="small"
+                    fullWidth
+                    variant="outlined"
+                    value={formik.values.designation}
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    error={
+                      formik.touched.designation &&
+                      Boolean(formik.errors.designation)
+                    }
+                    helperText={
+                      formik.touched.designation && formik.errors.designation
+                    }
+                  >
+                    <MenuItem value="employee">Employee</MenuItem>
+                    <MenuItem value="staf">Staff</MenuItem>
+                    <MenuItem value="admin">Admin</MenuItem>
+                  </TextField>
+                  <TextField
                     label="Password"
                     id="password"
                     type="password"
@@ -167,31 +218,7 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
                     }
                   />
 
-                  <TextField
-                    select
-                    label="Designation"
-                    name="designation"
-                    id="designation"
-                    size="small"
-                    fullWidth
-                    variant="outlined"
-                    value={formik.values.designation}
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    error={
-                      formik.touched.designation &&
-                      Boolean(formik.errors.designation)
-                    }
-                    helperText={
-                      formik.touched.designation && formik.errors.designation
-                    }
-                  >
-                    <MenuItem value="employee">Employee</MenuItem>
-                    <MenuItem value="staf">Staf</MenuItem>
-                    <MenuItem value="admin">Admin</MenuItem>
-                  </TextField>
                   <FormControl
-                    fullWidth
                     error={
                       formik.touched.images && Boolean(formik.errors.images)
                     }
@@ -202,11 +229,13 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
                     <input
                       type="file"
                       name="images"
-                      accept="images/*"
+                      accept="image/*"
                       size="small"
                       multiple
                       onBlur={formik.handleBlur}
-                      onChange={(event) => handleFileChange(event, formik)}
+                      onChange={(event) =>
+                        handleFileChange(event, formik, setImageBase64Array)
+                      }
                     />
                     {formik.touched.images && formik.errors.images && (
                       <Typography variant="body2" color="error">
@@ -239,6 +268,7 @@ NewUserModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
+  setImageBase64Array: PropTypes.func.isRequired,
 };
 
 export default NewUserModal;
