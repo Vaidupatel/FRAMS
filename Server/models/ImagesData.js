@@ -1,37 +1,42 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-const AdminSchema = new Schema({
-  name: {
-    type: String,
+const ImageSchema = new Schema({
+  userName: {
+    type: "string",
     required: true,
   },
-  adminID: {
+  userID: {
     type: Number,
     length: 15,
     required: true,
   },
-  email: {
-    type: String,
-    required: true,
-    lowercase: true,
-  },
-  mobile: {
-    type: Number,
-    length: 10,
+  userDesig: {
+    type: "string",
     required: true,
   },
-  password: {
+  userLabel: {
     type: String,
     required: true,
   },
-  designation: {
+  image1: {
     type: String,
     required: true,
   },
-  isImageSubmited: {
-    type: Boolean,
+  image2: {
+    type: String,
     required: true,
-    default: false,
+  },
+  image3: {
+    type: String,
+    required: true,
+  },
+  image4: {
+    type: String,
+    required: true,
+  },
+  image5: {
+    type: String,
+    required: true,
   },
   createdAt: {
     type: Date,
@@ -40,6 +45,6 @@ const AdminSchema = new Schema({
   },
 });
 
-const Admin = mongoose.model("admin", AdminSchema);
-module.exports = Admin;
+const Image = mongoose.model("image", ImageSchema);
+module.exports = Image;
 // export default Admin;

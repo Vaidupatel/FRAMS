@@ -67,7 +67,8 @@ router.post(
   }
 );
 
-// ROUTE 2: Create the admin using: POST "/api/auth/createAdmin". No login required
+
+// ROUTE 2: Create the new admin using: POST "/api/auth/createAdmin". No login required
 router.post(
   "/createAdmin",
   [
@@ -76,6 +77,8 @@ router.post(
     body("email", "Enter valid email").isEmail(),
     body("mobile", "Enter valid mobile number").isMobilePhone(),
     body("password", "Enter valid password").isLength({ min: 5 }),
+    body("designation", "Enter valid designation"),
+    body("isImageSubmited", "Enter valid value").isBoolean(),
   ],
   async (req, res) => {
     // console.log(req.body);
@@ -103,6 +106,8 @@ router.post(
         adminID: req.body.adminID,
         email: req.body.email,
         mobile: req.body.mobile,
+        designation: req.body.designation,
+        isImageSubmited: req.body.isImageSubmited,
         password: secPassword,
       });
       const data = {

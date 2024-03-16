@@ -5,6 +5,8 @@ import {
   Button,
   Stack,
   TextField,
+  MenuItem,
+  FormControl,
 } from "@mui/material";
 import { Form, Formik } from "formik";
 import PropTypes from "prop-types";
@@ -17,6 +19,7 @@ const initialValues = {
   email: "",
   password: "",
   cpasswprd: "",
+  designation: "",
   images: [],
 };
 
@@ -46,12 +49,25 @@ const validationSchema = Yup.object({
   cpasswprd: Yup.string()
     .oneOf([Yup.ref("password"), null], "Password must be same")
     .required("Confirm Password is required"),
+  designation: Yup.string().required("Designation is required"),
+  images: Yup.array()
+    .required("Please upload 5 photos")
+    .min(5, "Please upload exactly 5 photos")
+    .max(5, "Please upload exactly 5 photos")
+    .test({
+      name: "fileType",
+      message: "Please upload only image files",
+      test: (value) => {
+        if (!value) return true; // If no files are uploaded, validation passes
+        return value.every((file) => /^image\/(jpeg|png|gif)$/.test(file.type));
+      },
+    }),
 });
-
 
 function NewUserModal({ isOpen, onClose, onSubmit }) {
   const handleFileChange = (event, formik) => {
-    formik.setFieldValue("images", event.currentTarget.files);
+    const filesArray = Array.from(event.currentTarget.files);
+    formik.setFieldValue("images", filesArray);
   };
   return (
     <Modal open={isOpen} onClose={onClose}>
@@ -85,6 +101,7 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
                     label="Name"
                     id="name"
                     // type="text"
+                    size="small"
                     name="name"
                     value={formik.values.name}
                     onBlur={formik.handleBlur}
@@ -96,6 +113,7 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
                     label="ID"
                     id="id"
                     name="id"
+                    size="small"
                     value={formik.values.id}
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
@@ -106,6 +124,7 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
                     label="Email"
                     id="email"
                     name="email"
+                    size="small"
                     value={formik.values.email}
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
@@ -117,6 +136,7 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
                     id="password"
                     type="password"
                     name="password"
+                    size="small"
                     autoComplete="off"
                     value={formik.values.password}
                     onBlur={formik.handleBlur}
@@ -133,6 +153,7 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
                     id="cpasswprd"
                     type="password"
                     name="cpasswprd"
+                    size="small"
                     autoComplete="off"
                     value={formik.values.cpasswprd}
                     onBlur={formik.handleBlur}
@@ -145,20 +166,59 @@ function NewUserModal({ isOpen, onClose, onSubmit }) {
                       formik.touched.cpasswprd && formik.errors.cpasswprd
                     }
                   />
-                  <Typography variant="body1">Upload your 10 photos</Typography>
-                  <input
-                    type="file"
-                    accept="images/*"
-                    multiple
-                    // onChange={handleImageChange}
-                    onChange={(event) => handleFileChange(event, formik)}
-                  />
 
+                  <TextField
+                    select
+                    label="Designation"
+                    name="designation"
+                    id="designation"
+                    size="small"
+                    fullWidth
+                    variant="outlined"
+                    value={formik.values.designation}
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    error={
+                      formik.touched.designation &&
+                      Boolean(formik.errors.designation)
+                    }
+                    helperText={
+                      formik.touched.designation && formik.errors.designation
+                    }
+                  >
+                    <MenuItem value="employee">Employee</MenuItem>
+                    <MenuItem value="staf">Staf</MenuItem>
+                    <MenuItem value="admin">Admin</MenuItem>
+                  </TextField>
+                  <FormControl
+                    fullWidth
+                    error={
+                      formik.touched.images && Boolean(formik.errors.images)
+                    }
+                  >
+                    <Typography variant="body1">
+                      Upload your 5 photos
+                    </Typography>
+                    <input
+                      type="file"
+                      name="images"
+                      accept="images/*"
+                      size="small"
+                      multiple
+                      onBlur={formik.handleBlur}
+                      onChange={(event) => handleFileChange(event, formik)}
+                    />
+                    {formik.touched.images && formik.errors.images && (
+                      <Typography variant="body2" color="error">
+                        {formik.errors.images}
+                      </Typography>
+                    )}
+                  </FormControl>
                   <Box>
                     <Button
                       type="submit"
                       variant="contained"
-                      size="large"
+                      size="small"
                       disabled={!formik.isValid || formik.isSubmitting}
                     >
                       Submit

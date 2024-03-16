@@ -15,10 +15,12 @@ app.use(cors());
 // Available Routes
 const authRoutes =require( "./routes/auth.js");
 const userRoutes =require("./routes/admin.js");
+const imageRoutes =require("./routes/images.js");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/auth/rootadmin", authRoutes);
+app.use("/api/auth", imageRoutes);
 
 app.listen(port, () => {
   console.log(`FRAM Server listening on http://localhost:${port}`);
