@@ -72,17 +72,29 @@ function NewUserModal({ isOpen, onClose, onSubmit, setImageBase64Array }) {
   const handleFileChange = (event, formik) => {
     const filesArray = Array.from(event.currentTarget.files);
     const base64Array = [];
+    const maxSize = 3 * 1024 * 1024;
+    let hasError = false;
 
     filesArray.forEach((file) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.split(",")[1];
-        base64Array.push(base64String);
-        setImageBase64Array(base64Array);
-      };
+      if (file.size <= maxSize) {
+        console.log(`${file.name},${file.size}`)
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64String = reader.result.split(",")[1];
+          base64Array.push(base64String);
+          setImageBase64Array(base64Array);
+        };
+      } else {
+        hasError = true;
+      }
     });
-    formik.setFieldValue("images", filesArray);
+    if (hasError) {
+      formik.setFieldError("images", "File size should be less than 3MB");
+    } else {
+      formik.setFieldValue("images", filesArray);
+      formik.setFieldError("images", undefined);
+    }
   };
   return (
     <Modal open={isOpen} onClose={onClose}>
