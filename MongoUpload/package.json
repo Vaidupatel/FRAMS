@@ -1,0 +1,17 @@
+{
+  "name": "mongoupload",
+  "version": "1.0.0",
+  "description": "Mongo file upload with gridfs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "vaidik",
+  "license": "ISC",
+  "dependencies": {
+    "mongodb": "^6.5.0"
+  },
+  "devDependencies": {
+    "clipboardy": "^4.0.0"
+  }
+}

@@ -1,76 +1,114 @@
 const { Router } = require("express");
 const router = Router();
-const Image = require("../models/ImagesData");
 const { body, validationResult } = require("express-validator");
-const { sign } = require("jsonwebtoken");
-const Admin = require("../models/Admin");
-const jWT_SECRET = "OmfoooTuDekhengaMeraToken";
+const { MongoClient, GridFSBucket } = require("mongodb");
+const mongoPass = "4iV9cexpfHXV9UUu";
+const mongoURI = `mongodb+srv://vaidkumar31:${mongoPass}@cluster0.dblhkka.mongodb.net/?retryWrites=true&w=majority`;
+const dbName = "images";
 
-// ROUTE 1: Store the Base64  : POST "/api/auth/storeimages". No login requires
+async function uploadFile(dataBase, adminID, designation, imageID, imageData) {
+  const bucket = new GridFSBucket(dataBase);
+  const uploadStream = bucket.openUploadStream(imageID, {
+    metadata: { adminID, designation },
+  });
+  const base64Buffer = Buffer.from(imageData, "base64");
+  uploadStream.end(base64Buffer);
+  return new Promise((resolve, reject) => {
+    uploadStream.on("finish", resolve);
+    uploadStream.on("error", reject);
+  });
+}
+// ROUTE 1: Store the Base64 : POST "/api/auth/storeimages". No login required
+const imageDataState = {};
+const mergedImage = {};
+
 router.post(
   "/storeimages",
   [
-    body("userName", "Enter valid name").isLength({ min: 3 }),
-    body("userID", "Enter valid id").isLength({ min: 15, max: 15 }),
-    body("userDesig", "Enter valid designation").notEmpty(),
-    body("userLabel", "Enter valid label").notEmpty(),
-    body("image1", "Enter valid image data").isString(),
-    body("image2", "Enter valid image data").isString(),
-    body("image3", "Enter valid image data").isString(),
-    body("image4", "Enter valid image data").isString(),
-    body("image5", "Enter valid image data").isString(),
+    body("adminID")
+      .isLength({ min: 15, max: 15 })
+      .withMessage("Admin ID must be 15 characters long")
+      .isNumeric()
+      .withMessage("Admin ID must be a number"),
+    body("designation")
+      .isString()
+      .withMessage("Designation must be a string")
+      .notEmpty()
+      .withMessage("Designation is required"),
+    body("imageID")
+      .isString()
+      .withMessage("Image ID must be a string")
+      .notEmpty()
+      .withMessage("Image ID is required"),
+    body("totalChunks")
+      .isNumeric()
+      .withMessage("Total Chunk must be a numeric")
+      .notEmpty()
+      .withMessage("Total Chunk is required"),
+    body("chunkID")
+      .isNumeric()
+      .withMessage("Chunk ID must be a string")
+      .notEmpty()
+      .withMessage("Chunk ID is required"),
+    body("imageData")
+      .isString()
+      .withMessage("Image data must be a string")
+      .notEmpty()
+      .withMessage("Image data is required"),
   ],
   async (req, res) => {
-    // console.log(req.body);
-    let success = false;
-    // if there is error, return error
     const errors = validationResult(req);
-    // console.log(errors.array());
     if (!errors.isEmpty()) {
-      return res.status(400).json({ success, errors: errors.array() });
+      return res.status(400).json({ errors: errors.array() });
     }
-    // Check if admin with ID is exist and images are uploaded or not
     try {
-      let admin = await Admin.findOne({
-        adminID: req.body.userID,
-        isImageSubmited: true,
-      });
-      if (admin) {
-        return res.status(400).json({
-          success,
-          error:
-            "Sorry, admin with same ID already exists and images are already submited",
-        });
+      const { adminID, designation, imageID, totalChunks, chunkID, imageData } =
+        req.body;
+
+      // chaeck if image ID is present in imageDataState or not
+      if (!imageDataState[imageID]) {
+        imageDataState[imageID] = [];
       }
 
-      //   Create a new document for user image
-      //   const uLabel = `${req.body.name}_${req.body.userID}_${req.body.userDesig}`;
-      userImage = await Image({
-        userName: req.body.userName,
-        userID: req.body.userID,
-        userDesig: req.body.userDesig,
-        userLabel: req.body.userLabel,
-        image1: req.body.image1,
-        image2: req.body.image2,
-        image3: req.body.image3,
-        image4: req.body.image4,
-        image5: req.body.image5,
-      });
+      // insert image data into imageDataState
+      imageDataState[imageID].push({ chunkID, imageData });
+      // if all chunks are received then merge them
+      if (imageDataState[imageID].length === totalChunks) {
+        for (const [imageID, chunks] of Object.entries(imageDataState)) {
+          const sortedChunks = chunks.sort((a, b) => a.chunkID - b.chunkID);
+          const mergedImageData = sortedChunks
+            .map((chunk) => chunk.imageData)
+            .join("");
+          let client;
+          try {
+            client = await MongoClient.connect(mongoURI, {
+              useNewUrlParser: true,
+              useUnifiedTopology: true,
+            });
+            const dataBase = client.db(dbName);
+            console.log("Uploading...");
+            await uploadFile(
+              dataBase,
+              adminID,
+              designation,
+              imageID,
+              mergedImageData
+            );
+            console.log("File uploaded!");
+          } catch (error) {
+            console.log("Error:", err);
+          } finally {
+            if (client) {
+              await client.close();
+            }
+          }
+        }
+      }
 
-      await userImage.save();
-      const data = {
-        userImage: {
-          id: userImage.id,
-          //   label: userImage.label,
-        },
-      };
-      const authTocken = sign(data, jWT_SECRET);
-      console.log(authTocken);
-      success = true;
-      res.json({ success, authTocken });
+      res.json({ success: true, mergedImage });
     } catch (error) {
-      console.log(error.message);
-      res.status(500).send("Internal server error: ");
+      console.error("An error occurred:", error);
+      res.status(500).send("Internal server error");
     }
   }
 );

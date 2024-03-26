@@ -14,13 +14,13 @@ import * as Yup from "yup";
 
 // Initialize the value for form
 const initialValues = {
-  name: "",
-  id: "",
-  email: "",
-  password: "",
-  cpasswprd: "",
-  designation: "",
-  mobile: "",
+  name: "vaidik",
+  id: "202103103510508",
+  email: "email@email.com",
+  password: "qwe@123",
+  cpasswprd: "qwe@123",
+  designation: "admin",
+  mobile: "7201927081",
   images: [],
 };
 
@@ -77,7 +77,7 @@ function NewUserModal({ isOpen, onClose, onSubmit, setImageBase64Array }) {
 
     filesArray.forEach((file) => {
       if (file.size <= maxSize) {
-        console.log(`${file.name},${file.size}`)
+        // console.log(`${file.name},${file.size}`)
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {

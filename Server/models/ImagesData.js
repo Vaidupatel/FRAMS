@@ -1,50 +1,35 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const ImageSchema = new Schema({
-  userName: {
-    type: "string",
-    required: true,
-  },
-  userID: {
+  adminID: {
     type: Number,
-    length: 15,
     required: true,
+    validate: {
+      validator: function (v) {
+        return String(v).length === 15 && !isNaN(v);
+      },
+      message: (props) => `${props.value} is not a valid admin ID`,
+    },
   },
-  userDesig: {
-    type: "string",
-    required: true,
-  },
-  userLabel: {
+  designation: {
     type: String,
     required: true,
   },
-  image1: {
-    type: String,
+  imageID: {
+    type: Number,
     required: true,
   },
-  image2: {
-    type: String,
+  imageData: {
+    type: [String],
     required: true,
-  },
-  image3: {
-    type: String,
-    required: true,
-  },
-  image4: {
-    type: String,
-    required: true,
-  },
-  image5: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    immutable: true,
-    default: () => Date.now(),
+    validate: {
+      validator: function (v) {
+        return v.length === 5 && v.every((image) => typeof image === "string");
+      },
+      message: (props) => `Image data array is invalid`,
+    },
   },
 });
 
-const Image = mongoose.model("image", ImageSchema);
+const Image = mongoose.model("Image", ImageSchema);
 module.exports = Image;
-// export default Admin;

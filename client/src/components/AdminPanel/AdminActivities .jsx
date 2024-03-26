@@ -1,6 +1,11 @@
 import { Button } from "@mui/material";
 import { useState } from "react";
 import NewUserModal from "./NewUserModal";
+// const { connect, connection } = require("mongoose");
+// const mongoPass = "4iV9cexpfHXV9UUu";
+// const fs = require("fs");
+
+// const mongoURI = `mongodb+srv://vaidkumar31:${mongoPass}@cluster0.dblhkka.mongodb.net/images?retryWrites=true&w=majority`;
 
 function AdminActivities() {
   const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
@@ -13,7 +18,7 @@ function AdminActivities() {
   const handleCloseNewUserModal = () => {
     setIsNewUserModalOpen(false);
   };
-
+  const chunkSize = 100000;
   const handleSubmitNewUserModal = async (formData) => {
     try {
       // const response = await fetch(
@@ -36,66 +41,55 @@ function AdminActivities() {
       // );
       // const json = await response.json();
       // console.log("Registration Response", json);
-
-      /**---------------------------------------------------------------------------------------------------------------- */
-      const imagePromises = imageBase64Array.map(
-        async (imageData, imageIndex) => {
-          // Calculate the chunk size
-          const chunkSize = 100000;
-          const totalChunks = Math.ceil(imageData.length / chunkSize);
-          const chunkPromises = [];
-
-          // Iterate over the total number of chunks
-          for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-            const start = chunkIndex * chunkSize;
-            const end = Math.min(start + chunkSize, imageData.length);
-
-            // Extract the chunk data
-            const chunkData = imageData.slice(start, end);
-
-            // Send each chunk as a separate request
-            const response = await fetch(
-              "http://localhost:5000/api/auth/storeimages",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  adminID: formData.id,
-                  imageID: imageIndex + 1,
-                  chunkID: chunkIndex + 1, // Calculate the chunk ID
-                  imageData: chunkData,
-                }),
-              }
-            );
-
-            const data = await response.json();
-            console.log(
-              `Image ${imageIndex + 1}, Chunk ${
-                chunkIndex + 1
-              } Storage Response:`,
-              data
-            );
-            chunkPromises.push(data);
+      // ===============================================================================
+      try {
+        for (let i = 0; i < imageBase64Array.length; i++) {
+          const image = imageBase64Array[i];
+          const imageID = `image_${i + 1}`;
+          const imageDataChunks = [];
+          for (let j = 0; j < image.length; j += chunkSize) {
+            const chunk = image.slice(j, j + chunkSize);
+            imageDataChunks.push(chunk);
           }
-
-          return Promise.all(chunkPromises);
+          await sendImageChunks(formData, imageID, imageDataChunks);
         }
-      );
-
-      await Promise.all(imagePromises);
+        console.log("All images chunks send to route successfully");
+      } catch (error) {
+        console.error("An error occurred:", error);
+      }
+      // ===============================================================================
     } catch (error) {
       console.error("An error occurred:", error);
     }
     // console.log("Form data from AdminPanel:", formData);
-    // const chunkData = imageBase64Array[0];
-    // console.log(imageBase64Array[0].length)
-    // console.log(imageBase64Array[1].length)
-    // console.log(imageBase64Array[2].length)
-    // console.log(imageBase64Array[3].length)
-    // console.log(imageBase64Array[4].length)
     setIsNewUserModalOpen(false);
+  };
+
+  const sendImageChunks = async (formData, imageID, imageDataChunks) => {
+    for (let index = 0; index < imageDataChunks.length; index++) {
+      const totalChunks = imageDataChunks.length;
+      const chunk = imageDataChunks[index];
+      const response = await fetch(
+        "http://localhost:5000/api/auth/storeimages",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            adminID: formData.id,
+            designation: formData.designation,
+            imageID: imageID,
+            totalChunks: totalChunks,
+            chunkID: index + 1,
+            imageData: chunk,
+          }),
+        }
+      );
+
+      const json = await response.json();
+      console.log(`Chunk ${index + 1} Response`, json);
+    }
   };
 
   return (
